@@ -1,0 +1,17 @@
+---
+vms:
+  - name: "proxy.puppetlabs.vm"
+    box: "puppetlabs/centos-6.6-64-nocm"
+    roles: [ "proxy" ]
+
+  - name: "master0.puppetlabs.vm"
+    box:  "puppetlabs/centos-6.6-64-nocm"
+    roles: [ "primary" ]
+
+  - name: "master1.puppetlabs.vm"
+    box:  "puppetlabs/centos-6.6-64-nocm"
+    roles: [ "secondary" ]
+
+  - name: "node.puppetlabs.vm"
+    box: "puppetlabs/centos-6.6-64-nocm"
+    roles: [ "posix_agent" ]

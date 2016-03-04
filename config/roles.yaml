@@ -1,0 +1,129 @@
+---
+roles:
+  primary:
+    private_networks:
+      - {ip: '10.20.1.112', auto_network: false}
+    providers:
+      - type: virtualbox
+        customize:
+          - [modifyvm, !ruby/sym id, '--memory', 4096]
+          - [modifyvm, !ruby/sym id, '--ioapic', 'on']
+          - [modifyvm, !ruby/sym id, '--cpus', '2']
+    provisioners:
+      - type: hosts
+      - type: shell
+        inline: "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
+      - type: shell
+        inline: "echo '10.20.1.126 puppet.puppetlabs.vm puppet' >> /etc/hosts"
+      - type: shell
+        inline: "service iptables stop"
+      - type: shell
+        inline: "chkconfig iptables off"
+      - type: shell
+        inline: |
+          cp /vagrant/iptables /etc/sysconfig/iptables
+          iptables-restore < /etc/sysconfig/iptables
+          echo 'export http_proxy=http://10.20.1.114:3127' >> /etc/profile
+          echo 'export HTTP_PROXY=http://10.20.1.114:3127' >> /etc/profile
+          echo 'export https_proxy=https://10.20.1.114:3127' >> /etc/profile
+          echo 'export HTTPS_PROXY=https://10.20.1.114:3127' >> /etc/profile
+          echo 'export NO_PROXY="10.20.1.112,localhost,master0.puppetlabs.vm"' >> /etc/profile
+          echo 'export no_proxy="10.20.1.112,localhost,master0.puppetlabs.vm"' >> /etc/profile
+          export http_proxy=http://10.20.1.114:3127
+          export HTTP_PROXY=http://10.20.1.114:3127
+          export https_proxy=https://10.20.1.114:3127
+          export HTTPS_PROXY=https://10.20.1.114:3127
+          export export NO_PROXY="10.20.1.112,localhost,master0.puppetlabs.vm"
+          export export no_proxy="10.20.1.112,localhost,master0.puppetlabs.vm"
+          echo 'umask 027' >> /etc/bashrc
+          umask 027
+          echo '/tmp  /var/tmp  none  rw,noexec,nosuid,nodev,bind  0  0' >> /etc/fstab
+          mount -o rw,noexec,nosuid,nodev,bind /tmp/ /var/tmp/
+          mount -o remount,noexec,nosuid,nodev /tmp
+          mount -o remount,noexec,nosuid,nodev /dev/shm
+      - type: pe_bootstrap
+        role: !ruby/sym master
+        answer_file: answers.txt
+        autosign: false
+      - type: shell
+        inline: |
+          /bin/cp /vagrant/license.key /etc/puppetlabs/
+          chown pe-puppet:pe-puppet /etc/puppetlabs/license.key
+          /sbin/service pe-puppetserver restart
+
+  secondary:
+    private_networks:
+      - {ip: '10.20.1.113', auto_network: false}
+    providers:
+      - type: virtualbox
+        customize:
+          - [modifyvm, !ruby/sym id, '--memory', 4096]
+          - [modifyvm, !ruby/sym id, '--ioapic', 'on']
+          - [modifyvm, !ruby/sym id, '--cpus', '2']
+    provisioners:
+      - type: hosts
+      - type: shell
+        inline: "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
+      - type: shell
+        inline: "echo '10.20.1.126 puppet.puppetlabs.vm puppet' >> /etc/hosts"
+      - type: shell
+        inline: "service iptables stop"
+      - type: shell
+        inline: "chkconfig iptables off"
+      - type: shell
+        inline: |
+          yum install -y ca-certificates
+          update-ca-trust enable
+          cp /vagrant/cert.pem /etc/pki/ca-trust/source/anchors/
+          update-ca-trust
+          route del default
+          route add default gw 10.20.1.114 eth1
+          echo 'umask 027' >> /etc/bashrc
+          umask 027
+          echo '/tmp  /var/tmp  none  rw,noexec,nosuid,nodev,bind  0  0' >> /etc/fstab
+          mount -o rw,noexec,nosuid,nodev,bind /tmp/ /var/tmp/
+          mount -o remount,noexec,nosuid,nodev /tmp
+          mount -o remount,noexec,nosuid,nodev /dev/shm
+          route delete default
+          route add default gw 10.20.1.114 eth1
+      - type: pe_bootstrap
+        role: !ruby/sym master
+        answer_file: answers.txt
+        autosign: false
+
+  proxy:
+    private_networks:
+      - {ip: '10.20.1.114', auto_network: false}
+    provisioners:
+      - {type: shell, inline: "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"}
+      - {type: hosts}
+      - type: pe_bootstrap
+        role: !ruby/sym agent
+        master: 'master.puppetlabs.vm'
+        answer_extras:
+        - q_fail_on_unsuccessful_master_lookup=n
+        - q_skip_master_verification=n
+        - q_puppetdb_hostname=clownpants
+        - q_database_host=clownpants
+        - q_puppetdb_port=8080
+        - q_database_port=5432
+      - type: shell
+        inline: |
+          sysctl -w net.ipv6.conf.all.disable_ipv6=1
+          sysctl -w net.ipv6.conf.default.disable_ipv6=1
+          echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+          echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
+          /opt/puppetlabs/bin/puppet apply /vagrant/scripts/proxy.pp; /bin/true
+
+  posix_agent:
+    private_networks:
+      - {ip: '0.0.0.0', auto_network: true}
+    provisioners:
+      - {type: shell, inline: "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"}
+      - {type: hosts}
+      - type: shell
+        inline: |-
+          echo "10.20.1.126 puppet.puppetlabs.vm puppet" >> /etc/hosts
+          mkdir -p /etc/puppetlabs/{facter/facts.d,puppet}
+          curl -sk https://puppet.puppetlabs.vm:8140/packages/current/install.bash | /bin/bash 
+  
