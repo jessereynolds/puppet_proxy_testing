@@ -6,7 +6,6 @@
 :LOGGING -
 -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "IPTables-Dropped: " --log-level 4
 -A LOGGING -j DROP
--A OUTPUT -d 10.20.1.114/32 -p tcp -m multiport --dports 80,443 -j ACCEPT
 -A OUTPUT -p tcp -m multiport --dports 80,443 -j LOGGING
 -A OUTPUT -j ACCEPT
 COMMIT
