@@ -1,12 +1,7 @@
 ---
-#pe_build:
-#  version: "2015.3.2"
-#  filename: "puppet-enterprise-2015.3.2-el-6-x86_64.tar.gz"
-#  download_root: 'file://Users/Users/brett/Downloads'
 pe_build:
   version: "2016.1.0"
-  filename: "puppet-enterprise-2016.1.0-rc2-422-g2b42faa-el-6-x86_64.tar"
-  download_root: 'file://Users/Users/brett/Downloads'
+  download_root: "http://pe-releases.puppetlabs.lan/:version"
 
 # Example of using pe_build to deploy a published PE release
 #

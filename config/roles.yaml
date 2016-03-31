@@ -35,12 +35,12 @@ roles:
           export HTTPS_PROXY=https://10.20.1.114:3127
           export export NO_PROXY="10.20.1.112,localhost,master0.puppetlabs.vm"
           export export no_proxy="10.20.1.112,localhost,master0.puppetlabs.vm"
-          echo 'umask 027' >> /etc/bashrc
-          umask 027
-          echo '/tmp  /var/tmp  none  rw,noexec,nosuid,nodev,bind  0  0' >> /etc/fstab
-          mount -o rw,noexec,nosuid,nodev,bind /tmp/ /var/tmp/
-          mount -o remount,noexec,nosuid,nodev /tmp
-          mount -o remount,noexec,nosuid,nodev /dev/shm
+          #echo 'umask 027' >> /etc/bashrc
+          #umask 027
+          #echo '/tmp  /var/tmp  none  rw,noexec,nosuid,nodev,bind  0  0' >> /etc/fstab
+          #mount -o rw,noexec,nosuid,nodev,bind /tmp/ /var/tmp/
+          #mount -o remount,noexec,nosuid,nodev /tmp
+          #mount -o remount,noexec,nosuid,nodev /dev/shm
       - type: pe_bootstrap
         role: !ruby/sym master
         answer_file: answers.txt
@@ -76,14 +76,12 @@ roles:
           update-ca-trust enable
           cp /vagrant/cert.pem /etc/pki/ca-trust/source/anchors/
           update-ca-trust
-          route del default
-          route add default gw 10.20.1.114 eth1
-          echo 'umask 027' >> /etc/bashrc
-          umask 027
-          echo '/tmp  /var/tmp  none  rw,noexec,nosuid,nodev,bind  0  0' >> /etc/fstab
-          mount -o rw,noexec,nosuid,nodev,bind /tmp/ /var/tmp/
-          mount -o remount,noexec,nosuid,nodev /tmp
-          mount -o remount,noexec,nosuid,nodev /dev/shm
+          #echo 'umask 027' >> /etc/bashrc
+          #umask 027
+          #echo '/tmp  /var/tmp  none  rw,noexec,nosuid,nodev,bind  0  0' >> /etc/fstab
+          #mount -o rw,noexec,nosuid,nodev,bind /tmp/ /var/tmp/
+          #mount -o remount,noexec,nosuid,nodev /tmp
+          #mount -o remount,noexec,nosuid,nodev /dev/shm
           route delete default
           route add default gw 10.20.1.114 eth1
       - type: pe_bootstrap
@@ -125,5 +123,5 @@ roles:
         inline: |-
           echo "10.20.1.126 puppet.puppetlabs.vm puppet" >> /etc/hosts
           mkdir -p /etc/puppetlabs/{facter/facts.d,puppet}
-          curl -sk https://puppet.puppetlabs.vm:8140/packages/current/install.bash | /bin/bash 
-  
+          curl -sk https://puppet.puppetlabs.vm:8140/packages/current/install.bash | /bin/bash
+
