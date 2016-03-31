@@ -1,6 +1,35 @@
 # Vagrant environment for Puppet Enterprise proxy testing
 
-## Environment Setup
+## Proxy Environments:
+
+### Transparent
+
+PE infra servers have:
+- no direct internet access
+- the ability to perform DNS lookups
+- outbound port 80 and 443 intercepted at the network level and forwarded to a "transparent" proxy
+- SSL uses HTTP CONNECT so there's no re-encryption
+
+### Intercept
+
+PE infra servers have:
+- no direct internet access
+- the ability to perform DNS lookups
+- outbound port 80 and 443 intercepted at the network level and forwarded to a "intercept" proxy
+- SSL connections are re-encrypted at the proxy, which means HTTP user agents need to trust the certificate presented by the proxy for all domains being accessed
+
+### Explicit, Unauthenticated
+
+### Explicit, Authenticated
+
+
+## Tests:
+
+- PE Installation Behind Proxy
+
+# Setting up
+
+## Environment Setup for Explicit Proxy
 
 Create and start the proxy:
 
@@ -54,27 +83,6 @@ Here's the error you get in 2016.1.0:
 Deploying environment: production
 [{"environment":"production","id":1,"status":"failed","error":{"kind":"puppetlabs.code-manager/deploy-failure","details":{"env-name":"production"},"msg":"Errors while deploying environment 'production' (exit code: 1):\nERROR\t -> Unable to determine current branches for Git source 'puppet' (/etc/puppetlabs/code-staging/environments)\nOriginal exception:\nFailed to connect to github.com: Connection timed out\n"}}]
 ```
-
-## Proxy Environments:
-
-### Intercept
-
-Also known as: Transparent
-
-PE infra servers have:
-- no direct internet access
-- the ability to perform DNS lookups
-- outbound port 80 and 443 intercepted and routed through a "transparent" proxy
-
-### Explicit, Unauthenticated
-
-### Explicit, Authenticated
-
-
-## Tests:
-
-- PE Installation Behind Proxy
-
 
 
 ## Examine the PE installer downloaded and used by pe_build...
