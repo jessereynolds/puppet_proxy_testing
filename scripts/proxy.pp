@@ -21,15 +21,15 @@ file { '/etc/sysconfig/iptables':
   mode    => '0644',
   content => "# Managed by Puppet
 *filter
-:INPUT ACCEPT [650:123180]
+:INPUT ACCEPT [0:0]
 :FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [478:77348]
+:OUTPUT ACCEPT [0:0]
 COMMIT
 # Managed by Puppet
 *nat
-:PREROUTING ACCEPT [4:436]
-:POSTROUTING ACCEPT [41:2520]
-:OUTPUT ACCEPT [41:2520]
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
 -A PREROUTING -s ${::networking['interfaces']['eth1']['network']}/24 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128
 -A PREROUTING -s ${::networking['interfaces']['eth1']['network']}/24 -p tcp -m tcp --dport 443 -j REDIRECT --to-ports 3129
 COMMIT\n",
