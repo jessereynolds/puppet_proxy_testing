@@ -97,15 +97,6 @@ Deploying environment: production
 ```
 
 
-## Examine the PE installer downloaded and used by pe_build...
-
-```
-$ (cd ~/.vagrant.d/pe_builds/ && ls -ld puppet-enterprise-2016.1.0-el-6-x86_64.tar.gz )
--rw-------  1 jesse  staff  366137126 31 Mar 10:12 puppet-enterprise-2016.1.0-el-6-x86_64.tar.gz
-
-$ (cd ~/.vagrant.d/pe_builds/ && md5 puppet-enterprise-2016.1.0-el-6-x86_64.tar.gz )
-MD5 (puppet-enterprise-2016.1.0-el-6-x86_64.tar.gz) = 8290764ce2c2565bcf84862b74adfa44
-```
 
 ### Setting up for Intercept
 
@@ -154,7 +145,80 @@ Ask code manager to deploy the production environment:
 puppet-code -w deploy production
 ```
 
+If you get an error about an invalid certificate, it likely indicates that the CA root cert and chain from the proxy server have are not available on the system for rugged to use.
 
+```
+[root@master1 ~]# puppet-code -w deploy production
+Deploying environment: production
+[{"environment":"production","id":1,"status":"failed","error":{"kind":"puppetlabs.code-manager/deploy-failure","details":{"env-name":"production"},"msg":"Errors while deploying environment 'production' (exit code: 1):\nERROR\t -> Unable to determine current branches for Git source 'puppet' (/etc/puppetlabs/code-staging/environments)\nOriginal exception:\nThe SSL certificate is invalid\n"}}]
+```
 
+### Tests you can do to ensure the proxy is working:
 
+Curl an http endpoint:
+
+```
+curl http://puppetlabs.com/
+```
+
+Curl an https endpoint:
+
+```
+curl https://puppetlabs.com/
+```
+
+Look at headers received by a remote website, ensure you can see appropriate data in the Via: and X-Forwarded-For: headers:
+
+```
+curl http://www.va.com.au/cgi-bin/test.sh
+```
+
+```
+curl https://www.leaky.org/ip_tester.pl
+```
+
+### Running r10k like code manager does
+
+```
+sudo -u pe-puppet /usr/local/bin/r10k deploy environment -pv \
+  -c /opt/puppetlabs/server/data/code-manager/r10k.yaml
+```
+
+eg:
+
+```
+[root@master1 ~]# sudo -u pe-puppet /usr/local/bin/r10k deploy environment -pv -c /opt/puppetlabs/server/data/code-manager/r10k.yaml
+ERROR    -> Unable to determine current branches for Git source 'puppet' (/etc/puppetlabs/code-staging/environments)
+Original exception:
+The SSL certificate is invalid
+```
+
+It may help to increase the debug level with eg `-v debug2` and/or include the stack trace from where it hits the error with `--trace` eg:
+
+```
+[root@master1 ~]# sudo -u pe-puppet /usr/local/bin/r10k deploy environment -p -v debug2 --trace -c /opt/puppetlabs/server/data/code-manager/r10k.yaml
+[2016-04-01 11:05:47 - DEBUG2] Reading configuration from "/opt/puppetlabs/server/data/code-manager/r10k.yaml"
+[2016-04-01 11:05:47 - DEBUG1] Testing to see if feature rugged is available.
+[2016-04-01 11:05:47 - DEBUG2] Attempting to load library 'rugged' for feature rugged
+[2016-04-01 11:05:47 - DEBUG1] Feature rugged is available.
+[2016-04-01 11:05:47 - DEBUG1] Setting Git provider to R10K::Git::Rugged
+[2016-04-01 11:05:47 - DEBUG1] Testing to see if feature pe_license is available.
+[2016-04-01 11:05:47 - DEBUG2] Attempting to load library 'pe_license' for feature pe_license
+[2016-04-01 11:05:47 - DEBUG1] Feature pe_license is available.
+[2016-04-01 11:05:47 - DEBUG2] pe_license feature is available, loading PE license key
+[2016-04-01 11:05:47 - DEBUG] Fetching 'https://github.com/beergeek/evil_control.git' to determine current branches.
+[2016-04-01 11:05:47 - DEBUG1] Fetching remote 'origin' at /opt/puppetlabs/server/data/code-manager/git/https---github.com-beergeek-evil_control.git
+[2016-04-01 11:05:53 - ERROR] Unable to determine current branches for Git source 'puppet' (/etc/puppetlabs/code-staging/environments)
+/opt/puppetlabs/puppet/lib/ruby/gems/2.1.0/gems/r10k-2.2.0/lib/r10k/source/git.rb:66:in `preload!'
+/opt/puppetlabs/puppet/lib/ruby/gems/2.1.0/gems/r10k-2.2.0/lib/r10k/deployment.rb:36:in `each'
+/opt/puppetlabs/puppet/lib/ruby/gems/2.1.0/gems/r10k-2.2.0/lib/r10k/deployment.rb:36:in `preload!'
+/opt/puppetlabs/puppet/lib/ruby/gems/2.1.0/gems/r10k-2.2.0/lib/r10k/action/deploy/environment.rb:42:in `visit_deployment'
+...snip...
+Original exception:
+The SSL certificate is invalid
+/opt/puppetlabs/puppet/lib/ruby/gems/2.1.0/gems/rugged-0.21.4/lib/rugged/repository.rb:203:in `fetch'
+/opt/puppetlabs/puppet/lib/ruby/gems/2.1.0/gems/rugged-0.21.4/lib/rugged/repository.rb:203:in `fetch'
+/opt/puppetlabs/puppet/lib/ruby/gems/2.1.0/gems/r10k-2.2.0/lib/r10k/git/rugged/bare_repository.rb:55:in `block in fetch'
+...snip...
+```
 
