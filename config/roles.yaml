@@ -82,8 +82,8 @@ roles:
           #mount -o rw,noexec,nosuid,nodev,bind /tmp/ /var/tmp/
           #mount -o remount,noexec,nosuid,nodev /tmp
           #mount -o remount,noexec,nosuid,nodev /dev/shm
-          #route delete default
-          #route add default gw 10.20.1.114 eth1
+          route delete default
+          route add default gw 10.20.1.114 eth1
       - type: pe_bootstrap
         role: !ruby/sym master
         answer_file: answers.txt
