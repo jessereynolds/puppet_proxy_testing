@@ -21,7 +21,7 @@ roles:
         inline: "chkconfig iptables off"
       - type: shell
         inline: |
-          cp /vagrant/iptables /etc/sysconfig/iptables
+          cp /vagrant/iptables.primary /etc/sysconfig/iptables
           iptables-restore < /etc/sysconfig/iptables
           echo 'export http_proxy=http://10.20.1.114:3127' >> /etc/profile
           echo 'export HTTP_PROXY=http://10.20.1.114:3127' >> /etc/profile
@@ -67,9 +67,9 @@ roles:
       - type: shell
         inline: "echo '10.20.1.126 puppet.puppetlabs.vm puppet' >> /etc/hosts"
       - type: shell
-        inline: "service iptables stop"
-      - type: shell
-        inline: "chkconfig iptables off"
+        inline: |
+          cp /vagrant/iptables.secondary /etc/sysconfig/iptables
+          iptables-restore < /etc/sysconfig/iptables
       - type: shell
         inline: |
           yum install -y ca-certificates
@@ -82,8 +82,8 @@ roles:
           #mount -o rw,noexec,nosuid,nodev,bind /tmp/ /var/tmp/
           #mount -o remount,noexec,nosuid,nodev /tmp
           #mount -o remount,noexec,nosuid,nodev /dev/shm
-          route delete default
-          route add default gw 10.20.1.114 eth1
+          #route delete default
+          #route add default gw 10.20.1.114 eth1
       - type: pe_bootstrap
         role: !ruby/sym master
         answer_file: answers.txt
