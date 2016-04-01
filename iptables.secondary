@@ -6,12 +6,7 @@
 :LOGGING -
 -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "IPTables-Dropped: " --log-level 4
 -A LOGGING -j DROP
--A OUTPUT -p tcp -m multiport --dports 80,443 -j LOGGING
 -A OUTPUT -j ACCEPT
-COMMIT
-*nat
--A OUTPUT -p tcp --dport 80  -j DNAT --to-destination 10.20.1.114:3128
--A OUTPUT -p tcp --dport 443 -j DNAT --to-destination 10.20.1.114:3129
 COMMIT
 # Completed on Fri Mar  4 00:08:14 2016
 # sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -j DNAT --to-destination IP:80

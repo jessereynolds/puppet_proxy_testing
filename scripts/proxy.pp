@@ -24,6 +24,8 @@ file { '/etc/sysconfig/iptables':
 :INPUT ACCEPT [0:0]
 :FORWARD ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
+-A FORWARD -i eth0 -o eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -i eth1 -o eth0 -j ACCEPT
 COMMIT
 # Managed by Puppet
 *nat
@@ -32,9 +34,11 @@ COMMIT
 :OUTPUT ACCEPT [0:0]
 -A PREROUTING -s ${::networking['interfaces']['eth1']['network']}/24 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128
 -A PREROUTING -s ${::networking['interfaces']['eth1']['network']}/24 -p tcp -m tcp --dport 443 -j REDIRECT --to-ports 3129
+-A POSTROUTING -o eth0 -j MASQUERADE
 COMMIT\n",
   notify => Service['iptables'],
 }
+
 service { 'iptables':
   ensure => running,
   enable => true,
@@ -96,7 +100,7 @@ file { '/etc/squid/squid.conf':
   group   => 'root',
   mode    => '0644',
   content => "acl localnet src ${::networking['interfaces']['eth1']['network']}/24 # RFC1918 possible internal network
-  acl internal dst ${::networking['interfaces']['eth1']['network']}/24
+acl internal dst ${::networking['interfaces']['eth1']['network']}/24
 acl SSL_ports port 443
 acl Safe_ports port 80    # http
 acl Safe_ports port 21    # ftp
@@ -110,7 +114,7 @@ acl Safe_ports port 591   # filemaker
 acl Safe_ports port 777   # multiling http
 acl CONNECT method CONNECT
 tcp_outgoing_address ${::networking['interfaces']['eth1']['ip']}
-http_access deny internal
+http_access allow internal
 http_access deny !Safe_ports
 http_access deny CONNECT !SSL_ports
 http_access allow localhost manager
@@ -142,5 +146,19 @@ service { 'squid':
   ensure    => running,
   enable    => true,
   subscribe => [File['/etc/squid/squid.conf','/etc/squid/ssl_cert/myca.pem'],Exec['squid_ssl_db']],
+}
+
+$ipf_key = 'net.ipv4.ip_forward'
+
+augeas { "sysctl_conf/${ipf_key}":
+  context => "/files/etc/sysctl.conf",
+  onlyif  => "get ${ipf_key} != '1'",
+  changes => "set ${ipf_key} '1'",
+  notify  => Exec["sysctl"],
+}
+
+exec { "/sbin/sysctl -p":
+  alias       => "sysctl",
+  refreshonly => true,
 }
 
