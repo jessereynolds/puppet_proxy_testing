@@ -38,6 +38,8 @@ PE infra servers have:
 - Code Manager can:
   - Deploy a control repo via https via proxy, eg a github repo
 - PE Installation works behind proxy
+- Installing enterprise only modules
+
 
 ## Setting up
 
