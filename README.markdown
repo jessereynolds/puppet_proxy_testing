@@ -55,7 +55,7 @@ Create and start master0:
 vagrant up /master0/
 ```
 
-Log into the [PE console](https://10.20.1.112).
+Log into the [master0 PE console](https://10.20.1.112).
 
 Go into the PE Master classification group and ensure the following parameters to the `puppet_enterprise::profile::master` class are as follows:
 - code_manager_auto_enable => true
@@ -109,36 +109,52 @@ MD5 (puppet-enterprise-2016.1.0-el-6-x86_64.tar.gz) = 8290764ce2c2565bcf84862b74
 
 ### Setting up for Intercept
 
+Create and start the proxy, if not done already:
 
+```bash
+vagrant up /proxy/
 ```
+
+Create and start master1:
+
+```bash
 vagrant up /master1/
 ```
 
-Current error seen during installation (pe_bootstrap):
+Log into the [master1 PE console](https://10.20.1.113).
+
+Go into the PE Master classification group and ensure the following parameters to the `puppet_enterprise::profile::master` class are as follows:
+- code_manager_auto_enable => true
+- file_sync_enabled => true
+- r10k_remote => "https://github.com/beergeek/evil_control.git"
+- r10k_proxy should not be set
+
+Create a user `deploy` in the Operators group. Set the password using the password reset link pasted into another browser.
+
+SSH in to master1 and sudo to root:
 
 ```
-==> master1.puppetlabs.vm: Loaded plugins: fastestmirror, security
-==> master1.puppetlabs.vm: Setting up Install Process
-==> master1.puppetlabs.vm: Could not retrieve mirrorlist http://mirrorlist.centos.org/?release=6&arch=x86_64&repo=os&infra=stock error was
-==> master1.puppetlabs.vm: 14: PYCURL ERROR 7 - "Failed to connect to 2a01:c0:2:4:0:acff:fe1e:1e52: Network is unreachable"
-==> master1.puppetlabs.vm: Error: Cannot retrieve repository metadata (repomd.xml) for repository: base. Please verify its path and try again
-==> master1.puppetlabs.vm: Running provisioner: pe_bootstrap...
-
-...snip...
-
-==> master1.puppetlabs.vm: STEP 4: INSTALL PACKAGES
-==> master1.puppetlabs.vm: ## Installing packages from repositories...
-==> master1.puppetlabs.vm: Loaded plugins: fastestmirror, security
-==> master1.puppetlabs.vm: Setting up Install Process
-==> master1.puppetlabs.vm: Determining fastest mirrors
-==> master1.puppetlabs.vm: Error: Cannot find a valid baseurl for repo: base
-==> master1.puppetlabs.vm: Could not retrieve mirrorlist http://mirrorlist.centos.org/?release=6&arch=x86_64&repo=os&infra=stoc
-k error was
-==> master1.puppetlabs.vm: 14: PYCURL ERROR 6 - "Couldn't resolve host 'mirrorlist.centos.org'"
-==> master1.puppetlabs.vm:
-==> master1.puppetlabs.vm: ========================================================================
-==> master1.puppetlabs.vm: !! ERROR: Package installation failed
-==> master1.puppetlabs.vm:
-==> master1.puppetlabs.vm: ========================================================================
+vagrant ssh /master1/
+sudo su -
 ```
+
+Do a puppet run.
+
+Log the root user's puppet client tools in as user `deploy`:
+
+```
+puppet-access login deploy \
+  --service-url https://master1.puppetlabs.vm:4433/rbac-api \
+  --lifetime 7d
+```
+
+Ask code manager to deploy the production environment:
+
+```
+puppet-code -w deploy production
+```
+
+
+
+
 
