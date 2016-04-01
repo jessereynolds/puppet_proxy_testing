@@ -18,14 +18,26 @@ PE infra servers have:
 - outbound port 80 and 443 intercepted at the network level and forwarded to a "intercept" proxy
 - SSL connections are re-encrypted at the proxy, which means HTTP user agents need to trust the certificate presented by the proxy for all domains being accessed
 
-### Explicit, Unauthenticated
+### Explicit
 
-### Explicit, Authenticated
+PE infra servers have:
+- no direct internet access
+- the ability to perform DNS lookups
+- to access the internet via http and https, a proxy configuration must be present
 
+### Explicit and Authenticated
+
+PE infra servers have:
+- no direct internet access
+- the ability to perform DNS lookups
+- to access the internet via http and https, a proxy configuration must be present
+- proxy configuration must include authentication credentials or token
 
 ## Tests:
 
-- PE Installation Behind Proxy
+- Code Manager can:
+  - Deploy a control repo via https via proxy, eg a github repo
+- PE Installation works behind proxy
 
 # Setting up
 
