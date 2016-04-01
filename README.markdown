@@ -41,6 +41,15 @@ PE infra servers have:
 
 ## Setting up
 
+### Pre-requisites
+
+- virtualbox
+- vagrant
+- the following vagrant plugins:
+  - oscar
+  - vagrant-hosts
+  - vagrant-cachier (optional)
+
 ### Environment Setup for Explicit Proxy
 
 Create and start the proxy:
