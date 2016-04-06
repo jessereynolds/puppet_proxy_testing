@@ -1,6 +1,6 @@
 ---
 pe_build:
-  version: "2016.1.0"
+  version: "2016.1.1"
   download_root: "http://pe-releases.puppetlabs.lan/:version"
 
 # Example of using pe_build to deploy a published PE release
