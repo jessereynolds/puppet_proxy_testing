@@ -1,6 +1,6 @@
 # Vagrant environment for Puppet Enterprise proxy testing
 
-## Proxy Environments:
+## Types of Proxy Environments:
 
 ### Transparent
 
@@ -38,7 +38,7 @@ PE infra servers have:
 - Code Manager can:
   - Deploy a control repo via https via proxy, eg a github repo
 - PE Installation works behind proxy
-- Installing enterprise only modules
+- Installing enterprise only modules works via proxy
 
 
 ## Setting up
@@ -66,13 +66,15 @@ Create and start master0:
 vagrant up /master0/
 ```
 
+Proxy is configured via environment variables and PE master profile.
+
 Log into the [master0 PE console](https://10.20.1.112).
 
 Go into the PE Master classification group and ensure the following parameters to the `puppet_enterprise::profile::master` class are as follows:
-- code_manager_auto_enable => true
+- code_manager_auto_configure => true
 - file_sync_enabled => true
-- r10k_remote => "https://github.com/beergeek/evil_control.git"
 - r10k_proxy => "http://10.20.1.114:3127"
+- r10k_remote => "https://github.com/beergeek/evil_control.git"
 
 Create a user `deploy` in the Operators group. Set the password using the password reset link pasted into another browser.
 
